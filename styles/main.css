@@ -1,0 +1,44 @@
+/* Main styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+.stTextInput > div > div > input {
+    font-family: 'Inter', sans-serif;
+}
+
+.chat-message {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.user-message {
+    background-color: #F0F2F6;
+}
+
+.assistant-message {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E0E0;
+}
+
+.message-content {
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+}
+
+.context-area {
+    background-color: #F8F9FA;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+}
+
+.file-uploader {
+    border: 2px dashed #E0E0E0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
