@@ -5,7 +5,7 @@
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd rag-powered-assistant
+cd IntelliContextAI
 ```
 
 2. Create a `.env` file and add your Groq API key:
@@ -15,7 +15,7 @@ GROQ_API_KEY=your_groq_api_key_here
 
 3. Install all required packages:
 ```bash
-pip install streamlit groq python-docx PyPDF2 python-dotenv numpy
+pip install -r requirements.txt
 ```
 
 ### Running the Application
@@ -94,12 +94,4 @@ graph TD
 ### Streamlit Configuration (.streamlit/config.toml)
 ```toml
 [server]
-headless = true
-address = "0.0.0.0"
 port = 5000
-
-[theme]
-primaryColor = "#FF4B4B"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F0F2F6"
-textColor = "#262730"
