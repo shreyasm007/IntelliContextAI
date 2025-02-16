@@ -44,10 +44,12 @@ with st.sidebar:
     # File upload section with cleaner UI
     st.subheader("📄 Upload Documents")
     uploaded_file = st.file_uploader(
-        "",  # Remove label text
-        type=["pdf", "docx", "txt"],
-        help="Upload PDF, DOCX, or TXT files to provide context for the AI"
+    "Upload a document",  # Provide a meaningful label
+    type=["pdf", "docx", "txt"],
+    help="Upload PDF, DOCX, or TXT files to provide context for the AI",
+    label_visibility="collapsed"  # Hides the label while keeping accessibility
     )
+
 
     if uploaded_file:
         with st.spinner("Processing document..."):
