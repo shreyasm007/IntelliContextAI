@@ -22,6 +22,16 @@ st.title("🤖 RAG-Powered AI Assistant (Developed by Shreyas Mohite)")
 with open("styles/main.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
+# Initialize session state
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "context" not in st.session_state:
+    st.session_state.context = None
+if "vectorstore" not in st.session_state:
+    st.session_state.vectorstore = None
+if "doc_processor" not in st.session_state:
+    st.session_state.doc_processor = DocumentProcessor()
+
 @st.cache_data(show_spinner=True)
 def get_groq_models(api_key: str):
     from groq import Groq  # ensure groq is installed: pip install groq
@@ -37,15 +47,6 @@ def get_groq_models(api_key: str):
         st.error("Failed to fetch models from Groq API: " + str(e))
         return ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
 
-# Initialize session state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "context" not in st.session_state:
-    st.session_state.context = None
-if "vectorstore" not in st.session_state:
-    st.session_state.vectorstore = None
-if "doc_processor" not in st.session_state:
-    st.session_state.doc_processor = DocumentProcessor()
 
 # Sidebar for configuration
 with st.sidebar:
