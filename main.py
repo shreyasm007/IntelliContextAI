@@ -61,7 +61,7 @@ with st.sidebar:
     )
     
     if not api_key.strip():
-        st.warning("No API key provided. Fallback static models will be used. Please enter a valid API key for dynamic model fetching.")
+        st.warning("No API key provided. Please enter a valid API key for dynamic model fetching.")
         model_ids = ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
     else:
         model_ids = get_groq_models(api_key)
