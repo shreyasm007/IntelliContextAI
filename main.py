@@ -56,7 +56,7 @@ with st.sidebar:
         "Groq API Key",
         type="password",
         value="",
-        help="Enter your Groq API key here"
+        help="🔹 Get your API key from https://groq.com. Sign in, go to API Keys, and generate a new one."
     )
     
     if not api_key.strip():
