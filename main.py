@@ -8,8 +8,6 @@ import gc
 # Load environment variables
 load_dotenv()
 
-import streamlit as st
-
 # Set the page configuration
 st.set_page_config(
     page_title="🤖 RAG-Powered AI Assistant (Developed by Shreyas Mohite)",

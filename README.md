@@ -1,57 +1,73 @@
-### It is advised to use virtual environment
+# IntelliContextAI - RAG-Powered AI Assistant
 
-### Installation
+## 📌 Overview
+**IntelliContextAI** is an AI-powered document analysis and chat system utilizing **Retrieval-Augmented Generation (RAG)**. It allows users to upload documents (PDF, DOCX, TXT) and interact with an AI assistant capable of answering questions based on the uploaded content. The system integrates **Groq AI** for intelligent response generation, ensuring contextual accuracy.
 
-1. Clone the repository:
+## 🚀 Features
+- **📝 Document Upload:** Supports PDF, DOCX, and TXT file formats.
+- **🗣️ Intelligent Chat Interface:** AI assistant fetches relevant context from uploaded documents before responding.
+- **📚 Context-Aware Responses:** Displays relevant document excerpts along with AI-generated answers.
+- **⚡ Fast & Scalable:** Utilizes **vector embeddings** for efficient similarity search.
+- **🎨 Streamlit UI:** Interactive and user-friendly interface.
+- **🌐 Dynamic LLM Selection:** Allows users to choose from multiple LLMs via a dropdown menu.
+
+---
+
+## 🛠️ Installation Guide
+
+### 1️⃣ Clone the Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/shreyasm007/IntelliContextAI.git
 cd IntelliContextAI
 ```
 
-2. Create a `.env` file and add your Groq API key:
-```
+### 2️⃣ Set Up Environment Variables
+Create a `.env` file in the project root or use the env.example and add your **Groq API key**:
+```ini
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-3. Install all required packages:
+### 3️⃣ Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Running the Application
+---
 
-Launch the application using Streamlit:
+## ▶️ Running the Application
+Launch the application using **Streamlit**:
 ```bash
 streamlit run main.py
 ```
+By default, the app will be accessible at **http://localhost:8501**.
 
-The application will be available at `http://localhost:5000`
+---
 
 ## 🎯 Usage Guide
 
-### 1. Document Upload
-- Click the "Upload Documents" section in the sidebar
-- Supported formats: PDF, DOCX, TXT
-- The system will automatically process and analyze the document
-- View document statistics including word count and estimated reading time
+### 📂 1. Document Upload
+- Navigate to the **"Upload Documents"** section in the sidebar.
+- Upload PDF, DOCX, or TXT files.
+- The system processes the document and extracts key information.
+- Displays **word count** and **estimated reading time**.
 
-### 2. Chat Interface
-- Enter your questions in the chat input
-- The assistant will:
-  1. Search for relevant context in your documents
-  2. Display the matching content (expandable)
-  3. Generate a comprehensive response
-  4. Stream the response in real-time
+### 💬 2. Chat Interface
+- Type a question in the chat box.
+- The assistant:
+  1. Searches for relevant content in uploaded documents.
+  2. Displays matching excerpts.
+  3. Generates and streams AI-powered responses.
+- Select from multiple **LLM models** using a dropdown menu in the UI.
 
-### 3. Context Visualization
-- Click the "📚 Relevant Context" expander to view source material
-- The system automatically selects the most relevant document sections
-- Context is preserved across conversation turns
+### 🔍 3. Context Visualization
+- Expand **"📚 Relevant Context"** to view referenced content.
+- AI ensures contextual consistency across conversation turns.
 
-## 🏗️ Technical Architecture
+---
 
-### Document Processing Pipeline
+## 🏡 Technical Architecture
 
+### 💜 Document Processing Pipeline
 ```mermaid
 graph TD
     A[Document Upload] --> B[File Type Detection]
@@ -64,34 +80,68 @@ graph TD
     H --> I[Similarity Search]
 ```
 
-### Key Components
+### 🔑 Key Components
 
-1. **DocumentPreprocessor**
-   - Text cleaning and normalization
-   - Content validation
-   - Metadata extraction
-   - Character encoding handling
+#### **1. DocumentPreprocessor**
+- Text normalization & cleaning
+- Content validation
+- Metadata extraction
+- Encoding handling
 
-2. **DocumentProcessor**
-   - Multi-format file handling
-   - Chunking strategy
-   - Progress tracking
-   - Error handling
+#### **2. DocumentProcessor**
+- Multi-format file handling
+- Document chunking
+- Efficient progress tracking
 
-3. **MinHashEncoder**
-   - Efficient document vectorization
-   - Semantic similarity computation
-   - Optimized search capabilities
+#### **3. MinHashEncoder**
+- Vectorizes documents for similarity search
+- Computes semantic relevance
 
-4. **ChatManager**
-   - Groq API integration
-   - Response streaming
-   - Context management
-   - Conversation flow
+#### **4. ChatManager**
+- Handles Groq API integration
+- Streams AI-generated responses
+- Manages chat session state
+- Supports dynamic LLM selection
 
-## 🛠️ Configuration
+---
 
-### Streamlit Configuration (.streamlit/config.toml)
+## ⚙️ Configuration
+
+### Streamlit Configuration (`.streamlit/config.toml`)
 ```toml
 [server]
-port = 5000
+port = 8501
+```
+
+### Environment Variables (`.env`)
+```ini
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+---
+
+## 🏁 Future Enhancements
+- 🍿️ **Multilingual Support** for wider accessibility.
+- 📊 **Enhanced Document Analytics** for deeper insights.
+- 🤖 **Customizable AI Models** for specific industry applications.
+- 🔍 **Advanced Search Features** with keyword filtering.
+
+---
+
+## 🤝 Contributing
+Feel free to contribute to this project by opening issues or submitting pull requests.
+
+### Steps to Contribute:
+1. **Fork** this repository.
+2. Create a **new branch** for your feature.
+3. Commit your changes and **push** to your fork.
+4. Open a **Pull Request (PR)**.
+
+---
+
+## 👨‍💻 Author
+**Shreyas Mohite**  
+🚀 Generative AI Engineer | Full Stack Developer
+
+For queries or collaborations, feel free to reach out! 🚀
+
