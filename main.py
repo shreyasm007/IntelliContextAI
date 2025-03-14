@@ -8,16 +8,36 @@ import gc
 # Load environment variables
 load_dotenv()
 
-# Page configuration
+import streamlit as st
+
+# Set the page configuration
 st.set_page_config(
-    page_title="RAG-Powered AI Assistant",
+    page_title="🤖 RAG-Powered AI Assistant (Developed by Shreyas Mohite)",
     page_icon="🤖",
     layout="wide"
 )
 
+# Now display the title in the app
+st.title("🤖 RAG-Powered AI Assistant (Developed by Shreyas Mohite)")
+
 # Load custom CSS
 with open("styles/main.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+@st.cache_data(show_spinner=True)
+def get_groq_models(api_key: str):
+    from groq import Groq  # ensure groq is installed: pip install groq
+    try:
+        client = Groq(api_key=api_key)
+        models_response = client.models.list()  # returns a ModelListResponse object
+        model_ids = [model.id for model in models_response.data]
+        if not model_ids:
+            st.error("No models returned from Groq API. Please check your API key or account settings.")
+            return ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
+        return model_ids
+    except Exception as e:
+        st.error("Failed to fetch models from Groq API: " + str(e))
+        return ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -33,13 +53,36 @@ if "doc_processor" not in st.session_state:
 with st.sidebar:
     st.title("⚙️ Configuration")
 
-    # API Key input
+    # API Key input without a hardcoded default
     api_key = st.text_input(
         "Groq API Key",
         type="password",
-        value=os.getenv("GROQ_API_KEY", ""),
+        value="",
         help="Enter your Groq API key here"
     )
+    
+    if not api_key.strip():
+        st.warning("No API key provided. Fallback static models will be used. Please enter a valid API key for dynamic model fetching.")
+        model_ids = ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
+    else:
+        model_ids = get_groq_models(api_key)
+    
+    # Wrap the model dropdown in a form to prevent immediate reruns
+    with st.form(key="model_form"):
+        selected_model = st.selectbox(
+            "Select LLM Model (Groq AI Inference)",
+            options=model_ids,
+            help="Choose a model from Groq's available models"
+        )
+        submit_model = st.form_submit_button("Set Model")
+        if submit_model:
+            st.session_state.selected_model = selected_model
+            st.success(f"Selected model: {selected_model}")
+
+    # If no model has been submitted yet, set a default (optional)
+    if "selected_model" not in st.session_state:
+        st.session_state.selected_model = model_ids[0]
+
 
     # File upload section with cleaner UI
     st.subheader("📄 Upload Documents")
@@ -81,8 +124,6 @@ with st.sidebar:
                 st.error(f"❌ Error processing document: {str(e)}")
 
 # Main chat interface
-st.title("🤖 RAG-Powered AI Assistant")
-
 if not api_key:
     st.warning("Please enter your Groq API key in the sidebar to start chatting.")
 else:

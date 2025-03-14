@@ -7,11 +7,7 @@ class ChatManager:
     def __init__(self, api_key: str):
         self.client = groq.Client(api_key=api_key)
 
-    def generate_response(
-        self,
-        messages: List[Dict],
-        context: str = None
-    ) -> str:
+    def generate_response(self, messages: List[Dict], context: str = None, model: str = "mixtral-8x7b-32768") -> str:
         formatted_messages = []
 
         # Add system message with context if available
@@ -35,10 +31,10 @@ class ChatManager:
             })
 
         try:
-            # Generate streaming response
+            # Generate streaming response using the provided model parameter
             chat_response = self.client.chat.completions.create(
                 messages=formatted_messages,
-                model="mixtral-8x7b-32768",
+                model=model,
                 temperature=0.7,
                 stream=True
             )
