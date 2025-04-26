@@ -7,9 +7,9 @@ class ChatManager:
     def __init__(self, api_key: str):
         self.client = groq.Client(api_key=api_key)
 
-    def generate_response(self, messages: List[Dict], context: str = None, model: str = "mixtral-8x7b-32768") -> str:
+    def generate_response(self, messages: List[Dict], context: str = None, model: str = None) -> str:
         formatted_messages = []
-
+        model = model or "deepseek-r1-distill-llama-70b"  # Default model if not provided
         # Add system message with context if available
         if context:
             system_content = (

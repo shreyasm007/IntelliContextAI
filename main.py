@@ -41,11 +41,11 @@ def get_groq_models(api_key: str):
         model_ids = [model.id for model in models_response.data]
         if not model_ids:
             st.error("No models returned from Groq API. Please check your API key or account settings.")
-            return ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
+            return ["deepseek-r1-distill-llama-70b", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
         return model_ids
     except Exception as e:
         st.error("Failed to fetch models from Groq API: " + str(e))
-        return ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
+        return ["deepseek-r1-distill-llama-70b", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
 
 
 # Sidebar for configuration
@@ -62,7 +62,7 @@ with st.sidebar:
     
     if not api_key.strip():
         st.warning("No API key provided. Please enter a valid API key for dynamic model fetching.")
-        model_ids = ["mixtral-8x7b-32768", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
+        model_ids = ["llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
     else:
         model_ids = get_groq_models(api_key)
     
@@ -166,7 +166,8 @@ else:
         with st.chat_message("assistant"):
             response = chat_manager.generate_response(
                 st.session_state.messages,
-                context=context
+                context=context,
+                model=st.session_state.selected_model
             )
             # Only add to session state, don't display again
             st.session_state.messages.append({
