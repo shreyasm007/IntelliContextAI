@@ -1,55 +1,54 @@
-import os
 from typing import List, Dict
-import groq
 import streamlit as st
+from langchain_groq import ChatGroq
+from langchain.memory import ConversationBufferMemory
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
+from langchain.chains import ConversationChain
 
 class ChatManager:
     def __init__(self, api_key: str):
-        self.client = groq.Client(api_key=api_key)
+        self.api_key = api_key
+        self.memory = ConversationBufferMemory()
 
     def generate_response(self, messages: List[Dict], context: str = None, model: str = None) -> str:
-        formatted_messages = []
-        model = model or "deepseek-r1-distill-llama-70b"  # Default model if not provided
-        # Add system message with context if available
-        if context:
-            system_content = (
-                "You are a helpful AI assistant. Use the following context to answer questions:\n\n"
-                f"{context}\n\n"
-                "If the context doesn't help answer the question, you can draw from your general knowledge. "
-                "Always be clear about which information comes from the context and which is from general knowledge."
-            )
-            formatted_messages.append({
-                "role": "system",
-                "content": system_content
-            })
-
-        # Format chat history
-        for message in messages:
-            formatted_messages.append({
-                "role": message["role"],
-                "content": message["content"]
-            })
-
+        model = model or "deepseek-r1-distill-llama-70b"
+        
         try:
-            # Generate streaming response using the provided model parameter
-            chat_response = self.client.chat.completions.create(
-                messages=formatted_messages,
-                model=model,
+            # Initialize chat model
+            llm = ChatGroq(
+                groq_api_key=self.api_key,
+                model_name=model,
                 temperature=0.7,
-                stream=True
+                streaming=True
             )
 
-            # Initialize response placeholder
+            # Format messages for LangChain
+            formatted_messages = []
+            if context:
+                formatted_messages.append(SystemMessage(content=f"Use this context to answer questions: {context}"))
+
+            for msg in messages:
+                if msg["role"] == "user":
+                    formatted_messages.append(HumanMessage(content=msg["content"]))
+                elif msg["role"] == "assistant":
+                    formatted_messages.append(AIMessage(content=msg["content"]))
+
+            # Create conversation chain
+            chain = ConversationChain(
+                llm=llm,
+                memory=self.memory,
+                verbose=True
+            )
+
+            # Generate streaming response
             response_placeholder = st.empty()
             full_response = ""
 
-            # Stream the response
-            for chunk in chat_response:
-                if chunk.choices[0].delta.content is not None:
-                    full_response += chunk.choices[0].delta.content
+            for chunk in chain.stream({"input": messages[-1]["content"]}):
+                if isinstance(chunk, dict) and "response" in chunk:
+                    full_response += chunk["response"]
                     response_placeholder.markdown(full_response + "▌")
 
-            # Show final response (without cursor)
             response_placeholder.markdown(full_response)
             return full_response
 

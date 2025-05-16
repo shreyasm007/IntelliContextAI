@@ -3,20 +3,16 @@ import os
 from dotenv import load_dotenv
 from utils.document_processor import DocumentProcessor
 from utils.chat_manager import ChatManager
-import gc
 
 # Load environment variables
 load_dotenv()
 
 # Set the page configuration
 st.set_page_config(
-    page_title="🤖 RAG-Powered AI Assistant (Developed by Shreyas Mohite)",
+    page_title="🤖 RAG-Powered AI Assistant",
     page_icon="🤖",
     layout="wide"
 )
-
-# Now display the title in the app
-st.title("🤖 RAG-Powered AI Assistant (Developed by Shreyas Mohite)")
 
 # Load custom CSS
 with open("styles/main.css") as f:
@@ -25,108 +21,51 @@ with open("styles/main.css") as f:
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "context" not in st.session_state:
-    st.session_state.context = None
 if "vectorstore" not in st.session_state:
     st.session_state.vectorstore = None
 if "doc_processor" not in st.session_state:
     st.session_state.doc_processor = DocumentProcessor()
 
-@st.cache_data(show_spinner=True)
-def get_groq_models(api_key: str):
-    from groq import Groq  # ensure groq is installed: pip install groq
-    try:
-        client = Groq(api_key=api_key)
-        models_response = client.models.list()  # returns a ModelListResponse object
-        model_ids = [model.id for model in models_response.data]
-        if not model_ids:
-            st.error("No models returned from Groq API. Please check your API key or account settings.")
-            return ["deepseek-r1-distill-llama-70b", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
-        return model_ids
-    except Exception as e:
-        st.error("Failed to fetch models from Groq API: " + str(e))
-        return ["deepseek-r1-distill-llama-70b", "llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
-
-
 # Sidebar for configuration
 with st.sidebar:
     st.title("⚙️ Configuration")
-
-    # API Key input without a hardcoded default
     api_key = st.text_input(
         "Groq API Key",
         type="password",
-        value="",
-        help="🔹 Get your API key from https://groq.com. Sign in, go to API Keys, and generate a new one."
+        help="🔹 Get your API key from https://groq.com"
     )
-    
-    if not api_key.strip():
-        st.warning("No API key provided. Please enter a valid API key for dynamic model fetching.")
-        model_ids = ["llama3-8b-8192", "llama-3.1-70b-versatile", "llama-3.3-70b-versatile"]
-    else:
-        model_ids = get_groq_models(api_key)
-    
-    # Wrap the model dropdown in a form to prevent immediate reruns
-    with st.form(key="model_form"):
-        selected_model = st.selectbox(
-            "Select LLM Model (Groq AI Inference)",
-            options=model_ids,
-            help="Choose a model from Groq's available models"
-        )
-        submit_model = st.form_submit_button("Set Model")
-        if submit_model:
-            st.session_state.selected_model = selected_model
-            st.success(f"Selected model: {selected_model}")
 
-    # If no model has been submitted yet, set a default (optional)
-    if "selected_model" not in st.session_state:
-        st.session_state.selected_model = model_ids[0]
-
-
-    # File upload section with cleaner UI
     st.subheader("📄 Upload Documents")
     uploaded_file = st.file_uploader(
-    "Upload a document",  # Provide a meaningful label
-    type=["pdf", "docx", "txt"],
-    help="Upload PDF, DOCX, or TXT files to provide context for the AI",
-    label_visibility="collapsed"  # Hides the label while keeping accessibility
+        "Upload a document",
+        type=["pdf", "docx", "txt"],
+        help="Upload PDF, DOCX, or TXT files"
     )
 
-
     if uploaded_file:
-        with st.spinner("Processing document..."):
-            try:
-                # Clear previous vectorstore to free memory
-                if st.session_state.vectorstore:
-                    del st.session_state.vectorstore
-                    gc.collect()
+        try:
+            # Process document
+            text = st.session_state.doc_processor.process_file(
+                uploaded_file.read(),
+                uploaded_file.name.split('.')[-1].lower(),
+                uploaded_file.name
+            )
 
-                # Get file type and process
-                file_type = uploaded_file.name.split('.')[-1].lower()
-                text = st.session_state.doc_processor.process_file(
-                    uploaded_file.read(),
-                    file_type,
-                    uploaded_file.name
-                )
+            # Create documents and embeddings
+            documents = st.session_state.doc_processor.create_documents(
+                text,
+                metadata={'source': uploaded_file.name}
+            )
+            st.session_state.vectorstore = st.session_state.doc_processor.create_embeddings(documents)
+            st.success("✅ Document processed successfully!")
 
-                # Create documents with metadata
-                documents = st.session_state.doc_processor.create_documents(
-                    text,
-                    metadata={'source': uploaded_file.name}
-                )
-
-                # Create embeddings
-                st.session_state.vectorstore = st.session_state.doc_processor.create_embeddings(documents)
-                st.success("✅ Document processed successfully!")
-
-            except Exception as e:
-                st.error(f"❌ Error processing document: {str(e)}")
+        except Exception as e:
+            st.error(f"❌ Error processing document: {str(e)}")
 
 # Main chat interface
 if not api_key:
     st.warning("Please enter your Groq API key in the sidebar to start chatting.")
 else:
-    # Initialize chat manager
     chat_manager = ChatManager(api_key)
 
     # Display chat messages
@@ -136,44 +75,28 @@ else:
 
     # Chat input
     if prompt := st.chat_input("What would you like to know?"):
-        # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
-
-        # Display user message
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Get relevant context if vectorstore exists
+        # Get relevant context if available
         context = None
         if st.session_state.vectorstore and prompt:
             try:
-                with st.spinner("Searching relevant context..."):
-                    results = st.session_state.vectorstore.similarity_search(prompt, k=2)
-                    if results:
-                        context = "\n\n".join([doc.page_content for doc in results])
-
-                        # Display context area
-                        with st.expander("📚 Relevant Context", expanded=False):
-                            st.markdown(f'''
-                            <div class="context-area">
-                            {context}
-                            </div>
-                            ''', unsafe_allow_html=True)
+                results = st.session_state.vectorstore.similarity_search(prompt, k=2)
+                context = "\n\n".join(doc.page_content for doc in results)
+                with st.expander("📚 Relevant Context", expanded=False):
+                    st.markdown(f'<div class="context-area">{context}</div>', unsafe_allow_html=True)
             except Exception as e:
                 st.error(f"Error retrieving context: {str(e)}")
 
-        # Generate and display assistant response using Groq
+        # Generate response
         with st.chat_message("assistant"):
             response = chat_manager.generate_response(
                 st.session_state.messages,
-                context=context,
-                model=st.session_state.selected_model
+                context=context
             )
-            # Only add to session state, don't display again
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": response
             })
-
-        # Clean up memory
-        gc.collect()
